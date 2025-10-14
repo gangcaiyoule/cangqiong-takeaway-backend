@@ -21,6 +21,7 @@ import com.sky.vo.SetmealVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -56,5 +57,31 @@ public class SetmealServiceImpl implements SetmealService {
      */
     public List<DishItemVO> getDishItemById(Long id) {
         return setmealMapper.getDishItemBySetmealId(id);
+    }
+
+    /**
+     * 新建套餐
+     * @param setmealDTO
+     */
+    @Override
+    @Transactional
+    public void add(SetmealDTO setmealDTO) {
+        //把大部分属性传出来存到Setmeal的对象
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+        //先把setmeal(套餐)的信息保存在setmeal数据库中
+        setmealMapper.insert(setmeal);
+        //获取一下套餐id，便于后面菜品和套餐对齐
+        Long id = setmeal.getId();
+
+        //把List<SetmealDish>传出来存起来
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        //把setmealDishes(菜品与套餐的关系)保存入setmeal_dish数据库中
+        for (SetmealDish dish : setmealDishes) {
+            dish.setSetmealId(id);
+        }
+        //批量插入数据库setmeal_dish
+        setmealDishMapper.insertbuch(setmealDishes);
+
     }
 }
