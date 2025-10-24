@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController("userDishController")
 @RequestMapping("/user/dish")
@@ -48,9 +49,11 @@ public class DishController {
 
         list = dishService.listWithFlavor(dish);
         //存入redis
-        redisTemplate.opsForValue().set(key, list);
+        //防止雪崩，加入随机时间
+        long baseTime = 1 * 24 * 60;//min
+        long randomTime = 10; //min
+        redisTemplate.opsForValue().set(key, list, baseTime + randomTime, TimeUnit.MINUTES);//防止缓存雪崩
 
         return Result.success(list);
     }
-
 }
