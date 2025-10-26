@@ -85,8 +85,7 @@ public class SetmealServiceImpl implements SetmealService {
             dish.setSetmealId(id);
         }
         //批量插入数据库setmeal_dish
-        setmealDishMapper.insertbatch(setmealDishes);
-
+        setmealDishMapper.insertBatch(setmealDishes);
     }
 
     /**

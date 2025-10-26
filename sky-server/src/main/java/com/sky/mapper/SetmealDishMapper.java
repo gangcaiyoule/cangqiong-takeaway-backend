@@ -19,7 +19,7 @@ public interface SetmealDishMapper {
      * 批量插入套餐菜品数据如setmeal_dish数据库
      * @param setmealDishes
      */
-    void insertbatch(List<SetmealDish> setmealDishes);
+    void insertBatch(List<SetmealDish> setmealDishes);
 
     /**
      * 根据套餐id查询套餐下的菜品
