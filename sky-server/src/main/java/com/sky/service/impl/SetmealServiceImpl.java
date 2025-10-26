@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 套餐业务实现
@@ -84,7 +85,7 @@ public class SetmealServiceImpl implements SetmealService {
             dish.setSetmealId(id);
         }
         //批量插入数据库setmeal_dish
-        setmealDishMapper.insertbuch(setmealDishes);
+        setmealDishMapper.insertbatch(setmealDishes);
 
     }
 
@@ -106,5 +107,27 @@ public class SetmealServiceImpl implements SetmealService {
         //查询套餐下的菜品
         setmealVO.setSetmealDishes(setmealDishMapper.getDishBySetmealId(setmealId));
         return setmealVO;
+    }
+
+    /**
+     * 批量删除套餐
+     * @param ids
+     * @return
+     */
+    @Transactional
+    @Override
+    public void deleteBatch(List<Long> ids) {
+        //查询这个套餐状态
+        ids.forEach(id -> {
+            SetmealVO setmealVO = getById(id);
+            if (Objects.equals(setmealVO.getStatus(), StatusConstant.ENABLE)) {
+                //起售状态不能删
+                throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
+            }
+        });
+        //先删除套餐菜品表的数据
+        setmealDishMapper.deleteBatch(ids);
+        //再删除套餐数据
+        setmealMapper.deleteBatch(ids);
     }
 }

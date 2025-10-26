@@ -50,4 +50,10 @@ public interface SetmealMapper {
      */
     @Select("select * from setmeal where id = #{id}")
     Setmeal getById(Long id);
+
+    /**
+     * 批量删除套餐
+     * @param setmeal_ids
+     */
+    void deleteBatch(List<Long> setmeal_ids);
 }
