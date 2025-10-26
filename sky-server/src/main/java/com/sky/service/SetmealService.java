@@ -29,4 +29,11 @@ public interface SetmealService {
      * @param setmealDTO
      */
     void add(SetmealDTO setmealDTO);
+
+    /**
+     * 根据套餐id查询套餐
+     * @param id
+     * @return
+     */
+    SetmealVO getById(Long id);
 }

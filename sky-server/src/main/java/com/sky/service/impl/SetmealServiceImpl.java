@@ -11,6 +11,7 @@ import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.SetmealEnableFailedException;
+import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -39,6 +40,8 @@ public class SetmealServiceImpl implements SetmealService {
     private SetmealDishMapper setmealDishMapper;
     @Autowired
     private DishMapper dishMapper;
+    @Autowired
+    private CategoryMapper categoryMapper;
 
     /**
      * 条件查询
@@ -83,5 +86,25 @@ public class SetmealServiceImpl implements SetmealService {
         //批量插入数据库setmeal_dish
         setmealDishMapper.insertbuch(setmealDishes);
 
+    }
+
+    /**
+     * 根据套餐id查询套餐
+     * @param setmealId
+     * @return
+     */
+    @Override
+    public SetmealVO getById(Long setmealId) {
+        Setmeal setmeal = setmealMapper.getById(setmealId);
+        if (setmeal == null) {
+            return null;
+        }
+        SetmealVO setmealVO = new SetmealVO();
+        BeanUtils.copyProperties(setmeal, setmealVO);
+        //查询分类名称
+        setmealVO.setCategoryName(categoryMapper.getcategoryNameById(setmeal.getCategoryId()));
+        //查询套餐下的菜品
+        setmealVO.setSetmealDishes(setmealDishMapper.getDishBySetmealId(setmealId));
+        return setmealVO;
     }
 }
