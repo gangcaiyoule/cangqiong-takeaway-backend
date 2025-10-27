@@ -24,6 +24,15 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateStatusByIds">
+        update setmeal
+        set status = #{status}, update_time = now()
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
     <delete id="deleteBatch">
         delete from setmeal where id in
         <foreach collection="setmeal_ids" item="setmeal_id" separator="," open="(" close=")">

@@ -130,6 +130,10 @@ public class SetmealServiceImpl implements SetmealService {
         setmealMapper.deleteBatch(ids);
     }
 
+    /**
+     * 更新套餐信息
+     * @param setmealDTO
+     */
     @Override
     public void update(SetmealDTO setmealDTO) {
         // 1️⃣ 修改套餐基本信息
@@ -150,6 +154,11 @@ public class SetmealServiceImpl implements SetmealService {
         }
     }
 
+    /**
+     * 分页查询
+     * @param setmealPageQueryDTO
+     * @return
+     */
     @Override
     public PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO) {
         // 启动分页
@@ -163,5 +172,21 @@ public class SetmealServiceImpl implements SetmealService {
 
         // 返回结果
         return new PageResult(p.getTotal(), p.getResult());
+    }
+
+    /**
+     * 更新售卖状态
+     * @param status
+     * @param ids
+     */
+    @Override
+    @Transactional
+    public void updateStatus(Integer status, List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException("套餐ID不能为空");
+        }
+
+        log.info("更新套餐状态为: {}, 套餐ID: {}", status, ids);
+        setmealMapper.updateStatusByIds(status, ids);
     }
 }

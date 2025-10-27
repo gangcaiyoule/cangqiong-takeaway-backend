@@ -8,6 +8,8 @@ import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+
 import java.util.List;
 
 @Mapper
@@ -71,4 +73,11 @@ public interface SetmealMapper {
      * @return
      */
     List<SetmealVO> pageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
+
+    /**
+     * 批量修改套餐状态
+     * @param status
+     * @param ids
+     */
+    void updateStatusByIds(Integer status, List<Long> ids);
 }

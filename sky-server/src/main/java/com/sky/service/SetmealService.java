@@ -57,4 +57,11 @@ public interface SetmealService {
      * @return
      */
     PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
+
+    /**
+     * 更新售卖状态
+     * @param status
+     * @param ids
+     */
+    void updateStatus(Integer status, List<Long> ids);
 }

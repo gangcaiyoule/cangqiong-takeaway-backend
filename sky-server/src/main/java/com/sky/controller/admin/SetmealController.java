@@ -99,4 +99,19 @@ public class SetmealController {
 
         return Result.success(pageResult);
     }
+
+    /**
+     * 更新售卖状态
+     * @param status
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("更新售卖状态")
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
+    public Result updateStatus(@PathVariable("status") Integer status, @RequestParam("id") List<Long> ids) {
+        log.info("修改套餐状态：status = {}, ids = {}", status, ids);
+        setmealService.updateStatus(status, ids);
+        return Result.success();
+    }
 }
