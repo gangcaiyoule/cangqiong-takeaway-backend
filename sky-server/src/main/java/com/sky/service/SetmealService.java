@@ -50,4 +50,11 @@ public interface SetmealService {
      * @return
      */
     void update(SetmealDTO setmealDTO);
+
+    /**
+     * 分页查询套餐
+     * @param setmealPageQueryDTO
+     * @return
+     */
+    PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
 }

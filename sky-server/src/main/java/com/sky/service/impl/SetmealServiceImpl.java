@@ -149,4 +149,19 @@ public class SetmealServiceImpl implements SetmealService {
             setmealDishMapper.insertBatch(setmealDishes);
         }
     }
+
+    @Override
+    public PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO) {
+        // 启动分页
+        PageHelper.startPage(setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize());
+
+        // 执行查询
+        List<SetmealVO> list = setmealMapper.pageQuery(setmealPageQueryDTO);
+
+        // 转成 Page 对象
+        Page<SetmealVO> p = (Page<SetmealVO>) list;
+
+        // 返回结果
+        return new PageResult(p.getTotal(), p.getResult());
+    }
 }
