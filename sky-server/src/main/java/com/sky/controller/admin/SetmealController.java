@@ -68,4 +68,18 @@ public class SetmealController {
         setmealService.deleteBatch(ids);
         return Result.success();
     }
+
+    /**
+     * 修改套餐
+     * @param setmealDTO
+     * @return
+     */
+    @PutMapping()
+    @ApiOperation("修改套餐")
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
+    public Result update(@RequestBody SetmealDTO setmealDTO) {
+        log.info("修改套餐: {}", setmealDTO);
+        setmealService.update(setmealDTO);
+        return Result.success();
+    }
 }

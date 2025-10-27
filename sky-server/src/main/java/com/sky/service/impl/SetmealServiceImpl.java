@@ -129,4 +129,24 @@ public class SetmealServiceImpl implements SetmealService {
         //再删除套餐数据
         setmealMapper.deleteBatch(ids);
     }
+
+    @Override
+    public void update(SetmealDTO setmealDTO) {
+        // 1️⃣ 修改套餐基本信息
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+        setmealMapper.update(setmeal);
+
+        Long setmealId = setmealDTO.getId();
+
+        // 2️⃣ 删除原有关联的菜品数据
+        setmealDishMapper.deleteBySetmealId(setmealId);
+        // 3. 批量插入新关系
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        if (setmealDishes != null && !setmealDishes.isEmpty()) {
+            // 在插入前，只需统一设置 setmealId
+            setmealDishes.forEach(dish -> dish.setSetmealId(setmealId));
+            setmealDishMapper.insertBatch(setmealDishes);
+        }
+    }
 }

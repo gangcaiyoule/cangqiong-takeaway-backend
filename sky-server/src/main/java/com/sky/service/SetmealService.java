@@ -43,4 +43,11 @@ public interface SetmealService {
      * @return
      */
     void deleteBatch(List<Long> ids);
+
+    /**
+     * 修改套餐
+     * @param setmealDTO
+     * @return
+     */
+    void update(SetmealDTO setmealDTO);
 }
