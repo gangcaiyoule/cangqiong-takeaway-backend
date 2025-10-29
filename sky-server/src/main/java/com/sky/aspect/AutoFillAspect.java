@@ -66,41 +66,74 @@ public class AutoFillAspect {
 
     }
 
+//    public void fillField(Object entity, OperationType operationType, LocalDateTime now, Long currentId) {
+//        //开始赋值
+//        if (operationType == OperationType.INSERT) {
+//            //四个参数
+//            try {
+//                //赋值updatetime
+//                Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+//                setUpdateTime.invoke(entity, now);
+//                //赋值upDateUser
+//                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+//                setUpdateUser.invoke(entity, currentId);
+//                //赋值setCreateUser
+//                Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
+//                setCreateUser.invoke(entity, currentId);
+//                //赋值updatetime
+//                Method setCreateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
+//                setCreateTime.invoke(entity, now);
+//
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//        } else if (operationType == OperationType.UPDATE) {
+//            //两个参数
+//            try {
+//                //赋值updatetime
+//                Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+//                setUpdateTime.invoke(entity, now);
+//                //赋值upDateUser
+//                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+//                setUpdateUser.invoke(entity, currentId);
+//
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//    }
+    /**
+     * 自动填充核心逻辑
+     */
     public void fillField(Object entity, OperationType operationType, LocalDateTime now, Long currentId) {
-        //开始赋值
-        if (operationType == OperationType.INSERT) {
-            //四个参数
-            try {
-                //赋值updatetime
-                Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                setUpdateTime.invoke(entity, now);
-                //赋值upDateUser
-                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
-                setUpdateUser.invoke(entity, currentId);
-                //赋值setCreateUser
-                Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
-                setCreateUser.invoke(entity, currentId);
-                //赋值updatetime
-                Method setCreateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
-                setCreateTime.invoke(entity, now);
+        Class<?> clazz = entity.getClass();
 
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        if (operationType == OperationType.INSERT) {
+            // 插入时：尝试填充四个字段（存在才填）
+            setIfExists(clazz, entity, AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class, now);
+            setIfExists(clazz, entity, AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class, now);
+            setIfExists(clazz, entity, AutoFillConstant.SET_CREATE_USER, Long.class, currentId);
+            setIfExists(clazz, entity, AutoFillConstant.SET_UPDATE_USER, Long.class, currentId);
 
         } else if (operationType == OperationType.UPDATE) {
-            //两个参数
-            try {
-                //赋值updatetime
-                Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                setUpdateTime.invoke(entity, now);
-                //赋值upDateUser
-                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
-                setUpdateUser.invoke(entity, currentId);
+            // 更新时：尝试填充两个字段（存在才填）
+            setIfExists(clazz, entity, AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class, now);
+            setIfExists(clazz, entity, AutoFillConstant.SET_UPDATE_USER, Long.class, currentId);
+        }
+    }
 
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+    /**
+     * 安全地调用 setter 方法，如果字段不存在则跳过
+     */
+    private void setIfExists(Class<?> clazz, Object entity, String methodName, Class<?> paramType, Object value) {
+        try {
+            Method method = clazz.getDeclaredMethod(methodName, paramType);
+            method.invoke(entity, value);
+        } catch (NoSuchMethodException ignored) {
+            // 实体类没有这个字段，直接跳过，不抛异常
+        } catch (Exception e) {
+            throw new RuntimeException("自动填充字段出错：" + methodName, e);
         }
     }
 }
