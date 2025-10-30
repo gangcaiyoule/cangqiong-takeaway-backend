@@ -27,6 +27,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.sky.entity.Orders.PENDING_PAYMENT;
+import static com.sky.entity.Orders.UN_PAID;
+
 @Service
 @Slf4j
 public class OrderServiceImpl implements OrderService {
@@ -75,14 +78,14 @@ public class OrderServiceImpl implements OrderService {
         Orders orders = new Orders();
         BeanUtils.copyProperties(ordersSubmitDTO, orders);
         orders.setNumber(orderNumber);
-        orders.setPayStatus(Orders.PENDING_PAYMENT); // 待支付状态
+        orders.setPayStatus(UN_PAID); // 待支付状态
         orders.setUserId(userId);
         orders.setAddress(addressBook.getDetail());
         orders.setConsignee(addressBook.getConsignee());
         orders.setPhone(addressBook.getPhone());
         orders.setOrderTime(LocalDateTime.now());
 
-        orders.setStatus(0); // 停售或默认状态
+        orders.setStatus(PENDING_PAYMENT); // 停售或默认状态
 //        orders.setCheckoutTime(null); // 可空
 //        orders.setRemark(""); // 避免 null
 
@@ -121,13 +124,21 @@ public class OrderServiceImpl implements OrderService {
         Long userId = BaseContext.getCurrentId();
         User user = userMapper.getById(userId);
 
+        log.info("【模拟支付】订单信息: {}", ordersPaymentDTO);
         //调用微信支付接口，生成预支付交易单
-        JSONObject jsonObject = weChatPayUtil.pay(
-                ordersPaymentDTO.getOrderNumber(), //商户订单号
-                new BigDecimal(0.01), //支付金额，单位 元
-                "苍穹外卖订单", //商品描述
-                user.getOpenid() //微信用户的openid
-        );
+//        JSONObject jsonObject = weChatPayUtil.pay(
+//                ordersPaymentDTO.getOrderNumber(), //商户订单号
+//                new BigDecimal(0.01), //支付金额，单位 元
+//                "苍穹外卖订单", //商品描述
+//                user.getOpenid() //微信用户的openid
+//        );
+        // 模拟一个支付成功的 JSON 响应
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("prepay_id", "mock_prepay_id_123456");
+        jsonObject.put("nonceStr", "mock_nonce_abc123");
+        jsonObject.put("timeStamp", String.valueOf(System.currentTimeMillis() / 1000));
+        jsonObject.put("signType", "RSA");
+        jsonObject.put("package", "prepay_id=mock_prepay_id_123456");
 
         if (jsonObject.getString("code") != null && jsonObject.getString("code").equals("ORDERPAID")) {
             throw new OrderBusinessException("该订单已支付");
@@ -135,6 +146,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderPaymentVO vo = jsonObject.toJavaObject(OrderPaymentVO.class);
         vo.setPackageStr(jsonObject.getString("package"));
+        log.info("【模拟支付】生成预支付交易单：{}", vo);
 
         return vo;
     }
