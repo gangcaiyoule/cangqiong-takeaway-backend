@@ -45,7 +45,7 @@ sky:
     #用户
     user-secret-key: itheima
     user-ttl: 7200000
-    user_token-name: authentication
+    user-token-name: authentication
 
   alioss:
     endpoint: ${sky.alioss.endpoint}
