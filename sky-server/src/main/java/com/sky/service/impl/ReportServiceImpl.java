@@ -1,8 +1,10 @@
 package com.sky.service.impl;
 
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.TurnoverReportVO;
+import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import static com.sky.entity.Orders.COMPLETED;
 public class ReportServiceImpl implements ReportService {
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     /**
      * 营业额统计
@@ -61,5 +65,46 @@ public class ReportServiceImpl implements ReportService {
                 .turnoverList(turnoverListString)
                 .build();
         return turnoverReportVO;
+    }
+
+    /**
+     * 用户数据统计
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public UserReportVO getUserStatistics(LocalDate begin, LocalDate end) {
+        List<LocalDate> dateList = new ArrayList<>(); // 日期列表
+        List<Integer> totalUserList = new ArrayList<>(); // 总用户两列表
+        List<Integer> newUserList = new ArrayList<>(); //新增用户数列表
+
+        LocalDate date = begin;
+
+        while (!date.isAfter(end)) {
+            dateList.add(date);
+            //构建时间区间
+            LocalDateTime beginTime = date.atStartOfDay();
+            LocalDateTime endTime = date.plusDays(1).atStartOfDay();
+
+            Integer total = userMapper.countTotalUserUntil(endTime);
+            Integer newUser = userMapper.countNewUserByDate(beginTime, endTime);
+
+            totalUserList.add(total == null ? 0 : total);
+            newUserList.add(newUser == null ? 0 : newUser);
+
+            date = date.plusDays(1);
+        }
+        //装换成字符串
+        String dateListStr = dateList.stream().map(LocalDate::toString).collect(Collectors.joining(","));
+        String totalListStr = totalUserList.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String newUserListStr = newUserList.stream().map(String::valueOf).collect(Collectors.joining(","));
+        UserReportVO userReportVO = UserReportVO
+                .builder()
+                .dateList(dateListStr)
+                .totalUserList(totalListStr)
+                .newUserList(newUserListStr)
+                .build();
+        return userReportVO;
     }
 }

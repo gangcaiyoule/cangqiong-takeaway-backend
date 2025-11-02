@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDateTime;
+
 @Mapper
 public interface UserMapper {
     /**
@@ -28,4 +30,21 @@ public interface UserMapper {
      */
     @Select("select * from user where id = #{userId}")
     User getById(Long userId);
+
+    /**
+     * 统计截止某天的总用户量
+     * @param endTime
+     * @return
+     */
+    @Select("select count(*) from user where create_time < #{endTime}")
+    Integer countTotalUserUntil(LocalDateTime endTime);
+
+    /**
+     * 统计新增用户数量
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
+    @Select("select count(*) from user where create_time > #{beginTime} and create_time < #{endTime}")
+    Integer countNewUserByDate(LocalDateTime beginTime, LocalDateTime endTime);
 }
