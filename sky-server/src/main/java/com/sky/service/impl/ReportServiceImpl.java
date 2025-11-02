@@ -3,6 +3,7 @@ package com.sky.service.impl;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
+import com.sky.vo.OrderReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
@@ -106,5 +107,61 @@ public class ReportServiceImpl implements ReportService {
                 .newUserList(newUserListStr)
                 .build();
         return userReportVO;
+    }
+
+    /**
+     * 订单数据统计
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public OrderReportVO getOrderStatistics(LocalDate begin, LocalDate end) {
+        List<LocalDate> dateList = new ArrayList<>(); // 日期列表
+        List<Integer> orderCountList = new ArrayList<>(); //订单数列表
+        List<Integer> validOrderCountList = new ArrayList<>(); //有效订单数列表
+        LocalDate date = begin;
+        while (!date.isAfter(end)) {
+            dateList.add(date);
+            //构造时间区间
+            LocalDateTime beginTime = date.atStartOfDay();
+            LocalDateTime endTime = date.plusDays(1).atStartOfDay();
+
+            Map map = new HashMap<>();
+            map.put("beginTime", beginTime);
+            map.put("endTime", endTime);
+            map.put("status", null);
+            //订单数列表
+            Integer orderCount = orderMapper.countByDate(map);
+            orderCountList.add(orderCount == null ? 0 : orderCount);
+            //有效订单数列表
+            map.put("status", COMPLETED);
+            Integer validOrderCount = orderMapper.countByDate(map);
+            validOrderCountList.add(validOrderCount == null ? 0 : validOrderCount);
+            date = date.plusDays(1);
+        }
+        //整理数据
+        //订单总数
+        Integer totalOrderCount = orderCountList.stream().mapToInt(Integer::intValue).sum();
+        //有效订单总数
+        Integer validOrderCount = validOrderCountList.stream().mapToInt(Integer::intValue).sum();
+        //订单完成率
+        Double orderCompletionRate = 0.0;
+        if (totalOrderCount != 0) {
+            orderCompletionRate = validOrderCount.doubleValue() / totalOrderCount * 100;
+        }
+        //类型转化
+        String dataListStr = dateList.stream().map(LocalDate::toString).collect(Collectors.joining(","));
+        String orderCountListStr = orderCountList.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String validOrderCountListStr = validOrderCountList.stream().map(String::valueOf).collect(Collectors.joining(","));
+        OrderReportVO orderReportVO = OrderReportVO.builder()
+                .dateList(dataListStr)
+                .orderCompletionRate(orderCompletionRate)
+                .orderCountList(orderCountListStr)
+                .totalOrderCount(totalOrderCount)
+                .validOrderCount(validOrderCount)
+                .validOrderCountList(validOrderCountListStr)
+                .build();
+        return orderReportVO;
     }
 }
