@@ -1,9 +1,12 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
+import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,8 @@ public class ReportServiceImpl implements ReportService {
     private OrderMapper orderMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private OrderDetailMapper orderDetailMapper;
 
     /**
      * 营业额统计
@@ -163,5 +168,42 @@ public class ReportServiceImpl implements ReportService {
                 .validOrderCountList(validOrderCountListStr)
                 .build();
         return orderReportVO;
+    }
+
+    /**
+     * 获取销量Top10
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public SalesTop10ReportVO SalesTop10ReportVO(LocalDate begin, LocalDate end) {
+        // 构建时间区间
+        LocalDateTime beginTime = begin.atStartOfDay();
+        LocalDateTime endTime = end.atTime(LocalTime.MAX);
+
+        // 查询销量前10的商品
+        List<GoodsSalesDTO> top10List = orderDetailMapper.getTop10(beginTime, endTime);
+
+        // 拆分成两个列表：商品名、销量
+        List<String> nameList = top10List.stream()
+                .map(GoodsSalesDTO::getName)
+                .collect(Collectors.toList());
+
+        List<Integer> numberList = top10List.stream()
+                .map(GoodsSalesDTO::getNumber)
+                .collect(Collectors.toList());
+
+        // 拼成逗号分隔字符串
+        String nameStr = String.join(",", nameList);
+        String numberStr = numberList.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        // 构建返回对象
+        return SalesTop10ReportVO.builder()
+                .nameList(nameStr)
+                .numberList(numberStr)
+                .build();
     }
 }
